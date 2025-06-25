@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Kuis IPA SMP Sistem Peredaran Manusia</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 30px;
+    }
+    .question {
+      margin-bottom: 20px;
+    }
+    .hidden {
+      display: none;
+    }
+    input[type="text"] {
+      width: 300px;
+      margin-bottom: 10px;
+      display: block;
+    }
+    #timer {
+      font-weight: bold;
+      color: red;
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>Kuis IPA SMP</h2>
+  <h2>By: Torus Manuntun Nababan, M.Pd</h2>
+  <h2>Materi: Sistem Peredaran Manusia</h2>
+  <!-- Form Identitas -->
+  <div id="identityForm">
+    <h3>Silakan isi identitas terlebih dahulu:</h3>
+    <label>Nama:
+      <input type="text" id="nama" required>
+    </label>
+    <label>Kelas:
+      <input type="text" id="kelas" required>
+    </label>
+    <label>Tahun Ajaran:
+      <input type="text" id="tahun" required>
+    </label>
+    <label>Nama Sekolah:
+      <input type="text" id="sekolah" required>
+    </label>
+    <button onclick="startQuiz()">Mulai Kuis</button>
+  </div>
+
+  <!-- Timer -->
+  <div id="timer" class="hidden"></div>
+
+  <!-- Form Soal -->
+  <form id="quizForm" class="hidden">
+    <div id="questionsContainer"></div>
+    <button type="button" onclick="submitQuiz()">Selesai dan Lihat Skor</button>
+  </form>
+
+  <div id="result" class="hidden"></div>
+
+  <script>
+    const questions = [
+      { question: "1. Fungsi utama sistem peredaran darah adalah...", options: ["Mengatur suhu tubuh", "Mengedarkan oksigen dan zat makanan", "Menghasilkan energi", "Mencerna makanan"], answer: "Mengedarkan oksigen dan zat makanan" },
+    { question: "2. Organ utama dalam sistem peredaran darah manusia adalah...", options: ["Paru-paru", "Jantung", "Ginjal", "Hati"], answer: "Jantung" },
+    { question: "3. Jantung manusia memiliki berapa ruang?", options: ["2", "3", "4", "5"], answer: "4" },
+    { question: "4. Ruang jantung yang menerima darah dari tubuh adalah...", options: ["Serambi kiri", "Serambi kanan", "Bilik kiri", "Bilik kanan"], answer: "Serambi kanan" },
+    { question: "5. Pembuluh darah yang membawa darah dari jantung ke seluruh tubuh disebut...", options: ["Vena", "Aorta", "Arteri pulmonalis", "Kapiler"], answer: "Aorta" },
+    { question: "6. Pembuluh vena membawa darah menuju...", options: ["Jantung", "Paru-paru", "Otak", "Lambung"], answer: "Jantung" },
+    { question: "7. Darah yang kaya oksigen disebut darah...", options: ["Gelap", "Kotor", "Bersih", "Putih"], answer: "Bersih" },
+    { question: "8. Sel darah merah mengandung protein yang disebut...", options: ["Hemoglobin", "Albumin", "Fibrinogen", "Globulin"], answer: "Hemoglobin" },
+    { question: "9. Fungsi hemoglobin adalah...", options: ["Membunuh bakteri", "Mengangkut oksigen", "Membentuk antibodi", "Mencerna makanan"], answer: "Mengangkut oksigen" },
+    { question: "10. Bagian darah yang berfungsi membentuk benang fibrin saat terjadi luka adalah...", options: ["Sel darah merah", "Sel darah putih", "Plasma darah", "Keping darah"], answer: "Keping darah" },
+    { question: "11. Peredaran darah manusia disebut peredaran darah ganda karena...", options: ["Darah mengalir dua arah", "Melewati dua jantung", "Melalui dua kali sirkulasi", "Menggunakan dua warna"], answer: "Melalui dua kali sirkulasi" },
+    { question: "12. Peredaran darah kecil terjadi antara...", options: ["Jantung – tubuh", "Jantung – paru-paru", "Paru-paru – otak", "Jantung – ginjal"], answer: "Jantung – paru-paru" },
+    { question: "13. Alat pengukur tekanan darah disebut...", options: ["Stetoskop", "Termometer", "Sfigmomanometer", "Elektrokardiograf"], answer: "Sfigmomanometer" },
+    { question: "14. Tekanan darah normal pada orang dewasa adalah sekitar...", options: ["80/120 mmHg", "120/80 mmHg", "100/50 mmHg", "90/140 mmHg"], answer: "120/80 mmHg" },
+    { question: "15. Penyakit tekanan darah tinggi disebut...", options: ["Anemia", "Hipertensi", "Leukemia", "Hemofilia"], answer: "Hipertensi" },
+    { question: "16. Penyakit kekurangan sel darah merah disebut...", options: ["Hemofilia", "Leukemia", "Anemia", "Hipotensi"], answer: "Anemia" },
+    { question: "17. Pembuluh darah terkecil yang menjadi tempat pertukaran zat adalah...", options: ["Aorta", "Arteri", "Vena", "Kapiler"], answer: "Kapiler" },
+    { question: "18. Sel darah putih berfungsi untuk...", options: ["Mengangkut oksigen", "Menutup luka", "Melawan kuman penyakit", "Membentuk warna darah"], answer: "Melawan kuman penyakit" },
+    { question: "19. Plasma darah sebagian besar terdiri dari...", options: ["Protein", "Zat warna", "Air", "Garam mineral"], answer: "Air" },
+    { question: "20. Komponen darah yang bertugas melawan infeksi disebut...", options: ["Sel darah merah", "Keping darah", "Plasma", "Sel darah putih"], answer: "Sel darah putih" }
+  ];
+
+    let quizTimer;
+    let countdownInterval;
+    const timeLimit = 20 * 60 * 1000; // 20 menit
+
+    function startQuiz() {
+      const nama = document.getElementById('nama').value;
+      const kelas = document.getElementById('kelas').value;
+      const tahun = document.getElementById('tahun').value;
+      const sekolah = document.getElementById('sekolah').value;
+
+      if (!nama || !kelas || !tahun || !sekolah) {
+        alert("Harap lengkapi semua data identitas.");
+        return;
+      }
+
+      document.getElementById('identityForm').classList.add('hidden');
+      document.getElementById('quizForm').classList.remove('hidden');
+      document.getElementById('timer').classList.remove('hidden');
+
+      const container = document.getElementById('questionsContainer');
+      container.innerHTML = "";
+      questions.forEach((q, index) => {
+        const div = document.createElement('div');
+        div.classList.add('question');
+        div.innerHTML = `<p>${q.question}</p>` + q.options.map(opt => `
+          <label><input type="radio" name="q${index}" value="${opt}"> ${opt}</label><br>`).join('');
+        container.appendChild(div);
+      });
+
+      // Timer otomatis submit setelah 20 menit
+      quizTimer = setTimeout(() => {
+        alert("Waktu habis! Kuis akan otomatis disubmit.");
+        submitQuiz();
+      }, timeLimit);
+
+      // Countdown display
+      let remaining = timeLimit / 1000;
+      const timerDisplay = document.getElementById('timer');
+      timerDisplay.textContent = `Sisa waktu: ${remaining} detik`;
+      countdownInterval = setInterval(() => {
+        remaining--;
+        timerDisplay.textContent = `Sisa waktu: ${remaining} detik`;
+        if (remaining <= 0) {
+          clearInterval(countdownInterval);
+        }
+      }, 1000);
+    }
+
+    function submitQuiz() {
+      clearTimeout(quizTimer);
+      clearInterval(countdownInterval);
+
+      let score = 0;
+      questions.forEach((q, index) => {
+        const selected = document.querySelector(`input[name="q${index}"]:checked`);
+        if (selected && selected.value === q.answer) {
+          score += 10;
+        }
+      });
+
+      document.getElementById('quizForm').classList.add('hidden');
+      document.getElementById('timer').classList.add('hidden');
+      const resultDiv = document.getElementById('result');
+      resultDiv.classList.remove('hidden');
+
+      const nama = document.getElementById('nama').value;
+      const kelas = document.getElementById('kelas').value;
+      const tahun = document.getElementById('tahun').value;
+      const sekolah = document.getElementById('sekolah').value;
+
+      let message = "";
+      if (score >= 70) {
+        message = "<p style='color: green;'><strong>Selamat!</strong> Anda Sudah Bisa Melanjutkan ke Materi Berikutnya.</p>";
+      } else {
+        message = "<p style='color: red;'><strong>Mohon maaf.</strong> Silakan pelajari kembali materi ini sebelum melanjutkan ke materi berikutnya.</p>";
+      }
+
+      resultDiv.innerHTML = `
+        <h3>Hasil Kuis</h3>
+        <p><strong>Nama:</strong> ${nama}</p>
+        <p><strong>Kelas:</strong> ${kelas}</p>
+        <p><strong>Tahun Ajaran:</strong> ${tahun}</p>
+        <p><strong>Sekolah:</strong> ${sekolah}</p>
+        <p><strong>Skor Anda:</strong> ${score} dari 200</p>
+        ${message}
+      `;
+    }
+  </script>
+</body>
+</html>
